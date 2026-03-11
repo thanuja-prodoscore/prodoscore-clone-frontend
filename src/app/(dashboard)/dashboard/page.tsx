@@ -9,10 +9,14 @@ import { Info, Download, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/primitives';
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
+import { useAuth } from '@/context/AuthContext';
+import { basicEmployeeDetails } from '@/services/api';
+
 
 export default function DashboardPage() {
     const { selectedEmployee } = useDashboard();
     const [userInfo, setUserInfo] = useState({ email: "", name: "", image: "" });
+    const { user } = useAuth()
 
     useEffect(() => {
     const idToken = localStorage.getItem("token");
@@ -23,7 +27,7 @@ export default function DashboardPage() {
         try {
           const tokenResult = await user.getIdTokenResult();
           console.log("Token claims:", tokenResult.claims);
-
+          console.log(user)
           setUserInfo({
             email: user.email || (tokenResult.claims.email as string) || "",
             name: user.displayName || (tokenResult.claims.name as string) || "",
@@ -52,12 +56,12 @@ export default function DashboardPage() {
                     <Avatar src={userInfo.image} initials={selectedEmployee.avatarInitials} className="w-16 h-16 text-xl" />
                     <div>
                         <div className="flex items-center gap-3">
-                            <h2 className="text-2xl font-bold text-slate-900">{userInfo.name}</h2>
-                            <Badge variant="info">{selectedEmployee.designation}</Badge>
+                            <h2 className="text-2xl font-bold text-slate-900">{user?.name}</h2>
+                            <Badge variant="info">{user?.designation}</Badge>
                         </div>
                         <p className="text-slate-500 mt-1">
-                            Team: <span className="font-semibold text-slate-700">{selectedEmployee.team}</span> •
-                            Email: <span className="text-slate-600 ml-1">{userInfo.email}</span>
+                            Team: <span className="font-semibold text-slate-700">{user?.team?.name}</span> •
+                            Email: <span className="text-slate-600 ml-1">{user?.email}</span>
                         </p>
                     </div>
                 </div>

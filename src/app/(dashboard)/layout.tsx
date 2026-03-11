@@ -15,7 +15,7 @@ export default function DashboardLayout({
     const router = useRouter();
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('mock_user');
+        const savedUser = localStorage.getItem('employee_user');
         if (!savedUser && !isAuthenticated) {
             router.push('/login');
         }
@@ -23,9 +23,7 @@ export default function DashboardLayout({
 
     return (
         <div className="min-h-screen bg-slate-50 flex">
-            {/* <Sidebar /> */}
             <div className="transition-all duration-300">
-                {/* <Header /> */}
                 <main className="p-10 transition-all duration-300">
                     {children}
                 </main>

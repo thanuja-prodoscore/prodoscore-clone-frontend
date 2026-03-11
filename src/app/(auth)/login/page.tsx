@@ -1,42 +1,62 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
+import { useMutation } from '@tanstack/react-query';
+import { verifyGoogleToken } from '@/services/api';
 import { BarChart3, ShieldCheck, Globe, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { signInWithPopup } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebase';
 
 
+type LoginResponse = {
+  message: string
+  email: string
+  designation: string
+}
+
+
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, setUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleLogin = () => {
-        setLoading(true);
-        setTimeout(() => {
-            login()
-        }, 1200)
-    };
+    const [loginState, setLoginState] = useState<LoginResponse | null>(null)
 
-    const handleGoogleLogin = async() => {
-        setLoading(true)
-        setError(null)
+    const mutation = useMutation({
+        mutationFn: (idToken: string) => verifyGoogleToken(idToken),
+        onSuccess: (data) => {
+        setUser({
+            name: data.name,
+            email: data.email,
+            designation: data.designation,
+        })
+        },
+        onError: (err: any) => {
+            console.error(err);
+            setError(err instanceof Error ? err.message : "Failed to login");
+        },
+    });
+
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+        setError(null);
+
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const idToken = await result.user.getIdToken();
+            console.log("ID TOKEN:", idToken);
             localStorage.setItem("token", idToken);
-            console.log(idToken)
-            setTimeout(() => {
-                login()
-            }, 1200)
+            mutation.mutate(idToken)
+            // const data = mutation.mutate(idToken);
+            await login(idToken)
         } catch (err) {
             console.error("Google Login Error:", err);
             setError(err instanceof Error ? err.message : "Failed to sign in with Google");
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen bg-slate-900 flex flex-col md:flex-row overflow-hidden">
@@ -89,7 +109,7 @@ export default function LoginPage() {
                         </div>
 
                         <button
-                            onClick={handleLogin}
+                            // onClick={handleLogin}
                             className="w-full flex items-center justify-center px-4 py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition shadow-sm"
                             >
                             Sign in as Demo User
