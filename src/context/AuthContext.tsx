@@ -2,16 +2,20 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { basicEmployeeDetails } from '@/services/api';
+import { json } from 'stream/consumers';
 
 interface User {
     name: string;
     email: string;
-    avatarInitials: string;
+    designation: string,
+    team?: { id: number; name: string };
 }
 
 interface AuthContextType {
     user: User | null;
-    login: () => void;
+    setUser: (user: User) => void 
+    login: (idToken: string) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
 }
@@ -23,31 +27,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        const savedUser = localStorage.getItem('mock_user');
+        const savedUser = localStorage.getItem('employee_user');
         if (savedUser) {
             setUser(JSON.parse(savedUser));
         }
     }, []);
 
-    const login = () => {
-        const mockUser = {
-            name: 'Admin User',
-            email: 'admin@acme.corp',
-            avatarInitials: 'AU',
-        };
-        setUser(mockUser);
-        localStorage.setItem('mock_user', JSON.stringify(mockUser));
-        router.push('/dashboard');
+    const login = async(idToken : string) => {
+        try{
+            const data = await basicEmployeeDetails(idToken)
+            setUser(data)
+            localStorage.setItem("employee_user", JSON.stringify(data))
+            router.push("/dashboard")
+        }catch(error){
+            console.error('Failed to fetch user details', error);
+        }
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('mock_user');
+        localStorage.removeItem('employee_user');
+        localStorage.removeItem('token');
         router.push('/login');
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, setUser, login, logout, isAuthenticated: !!user }}>
             {children}
         </AuthContext.Provider>
     );
