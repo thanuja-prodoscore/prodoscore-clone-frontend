@@ -45,10 +45,9 @@ export default function LoginPage() {
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const idToken = await result.user.getIdToken();
-            console.log("ID TOKEN:", idToken);
+            // console.log("ID TOKEN:", idToken);
             localStorage.setItem("token", idToken);
             mutation.mutate(idToken)
-            // const data = mutation.mutate(idToken);
             await login(idToken)
         } catch (err) {
             console.error("Google Login Error:", err);

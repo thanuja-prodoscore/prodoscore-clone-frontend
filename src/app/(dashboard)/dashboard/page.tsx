@@ -31,7 +31,7 @@ export default function DashboardPage() {
           setUserInfo({
             email: user.email || (tokenResult.claims.email as string) || "",
             name: user.displayName || (tokenResult.claims.name as string) || "",
-            image: user.picture || (tokenResult.claims.picture as string) || "",
+            image: user.photoURL || (tokenResult.claims.photoURL as string) || "",
           });
         } catch (error) {
           console.error(error);
@@ -41,7 +41,7 @@ export default function DashboardPage() {
         setUserInfo({
           email: decoded.email || "",
           name: decoded.name || "",
-          image: decoded.picture || "",
+          image: decoded.photoURL || "",
         });
       }
     });
